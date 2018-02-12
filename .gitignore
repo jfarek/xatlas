@@ -1,0 +1,12 @@
+xatlas
+autom4te.cache
+config.h
+config.log
+config.status
+configure
+hgsc.mk
+Makefile
+misc
+*.o
+README.html
+scratch
