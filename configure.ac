@@ -5,7 +5,7 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_PROG_CXX
 dnl is there a good way to check for compiler c++11 support with vanilla autoconf?
-CXXFLAGS='-Wall -std=c++11'
+CXXFLAGS='-Wall -O2 -std=c++11'
 
 dnl Where is htslib
 AC_ARG_WITH([htslib_include],
