@@ -71,7 +71,6 @@ struct args {
     uint32_t region_idx;
 
     Bam *bam;
-    samFile *sf;
     hts_itr_t *iter;
 
     EventScanner *events;

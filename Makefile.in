@@ -25,7 +25,7 @@ $(XATLAS): $(OBJS)
 	$(CXX) -o $(XATLAS) $(OBJS) $(LDFLAGS) $(LIBS)
 
 .cpp.o:
-	$(CXX) $(CXXFLAGS) -c $< -o $@ $(INCL)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ $(CPPFLAGS)
 
 # installs PREFIX/bin/xatlas
 install: $(XATLAS)

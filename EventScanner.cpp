@@ -101,7 +101,6 @@ void EventScanner::collect_indels(
                         indel_pos,
                         c_len,
                         q_pos,
-                        r_pos,
                         seq,
                         strand,
                         read->core.qual));
@@ -122,7 +121,6 @@ void EventScanner::collect_indels(
                         indel_pos,
                         c_len,
                         q_pos,
-                        r_pos,
                         seq,
                         strand,
                         read->core.qual));

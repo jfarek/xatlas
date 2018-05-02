@@ -26,7 +26,6 @@ class IndelEvent
     int32_t _var_start;
     int32_t _var_len;
     int32_t _q_pos;
-    int32_t _r_pos;
     std::string _seq;
     std::string _id;
     uint16_t _read_count;
@@ -39,7 +38,6 @@ class IndelEvent
         int32_t start,
         int32_t len,
         int32_t q_pos,
-        int32_t r_pos,
         std::string &seq,
         bool strand,
         qual_t mqual,
