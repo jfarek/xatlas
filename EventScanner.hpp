@@ -21,6 +21,7 @@ class EventScanner
 
     EventScanner();
     double snp_nqs(int32_t p, int32_t qlen, const uint8_t *qquals);
+    int32_t left_align(const ReferenceSequence &refseq, std::string& seq, int32_t indel_pos, int32_t read_start_pos);
 
   public:
     SnpMap _snps;
