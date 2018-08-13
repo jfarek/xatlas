@@ -46,6 +46,15 @@ void ReferenceSequence::set_region(const char *region)
 
     // set all reference sequence to upper case
     for (size_t i = 0; i < (size_t)region_len; ++i) {
-        _seq[i] = std::toupper(_seq[i]);
+        switch (_seq[i]) {
+        case 'A': case 'C': case 'G': case 'T': case 'N':
+            break;
+        case 'a': case 'c': case 'g': case 't': case 'n':
+            _seq[i] = std::toupper(_seq[i]);
+            break;
+        default:
+            _seq[i] = 'N';
+            break;
+        }
     }
 }

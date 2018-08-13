@@ -113,10 +113,10 @@ void VcfWriter::setup_vcf_header(
     delete[] buffer;
 
     // FOMRAT
-    bcf_hdr_append(hdr, "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n");
-    bcf_hdr_append(hdr, "##FORMAT=<ID=GQ,Number=1,Type=Integer,Description=\"Genotype Quality\">\n");
-    bcf_hdr_append(hdr, "##FORMAT=<ID=PL,Number=3,Type=Integer,Description=\"Phred-scaled Genotype Likelihood Scores\">\n");
     bcf_hdr_append(hdr, "##FORMAT=<ID=DP,Number=1,Type=Integer,Description=\"Read Depth\">\n");
+    bcf_hdr_append(hdr, "##FORMAT=<ID=GQ,Number=1,Type=Integer,Description=\"Genotype Quality\">\n");
+    bcf_hdr_append(hdr, "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n");
+    bcf_hdr_append(hdr, "##FORMAT=<ID=PL,Number=G,Type=Integer,Description=\"Phred-scaled Genotype Likelihood Scores\">\n");
     bcf_hdr_append(hdr, "##FORMAT=<ID=RR,Number=1,Type=Integer,Description=\"Reference Read Depth\">\n");
     bcf_hdr_append(hdr, "##FORMAT=<ID=VR,Number=1,Type=Integer,Description=\"Major Variant Read Depth\">\n");
 
@@ -324,11 +324,11 @@ void VcfWriter::print_gvcf_span(
         uint32_t k = 0;
         int32_t i = last_call_pos;
 
-        // first pass: k == 0, don't break block and jump to skip
+        // first pass: k == 0, don't break block and jump to skip_break
         dp_cov = _coverages->get_coverage(i, i_dp);
         rr_cov = _coverages->get_coverage(i, i_rr);
         vr_cov = _coverages->get_coverage(i, i_vr);
-        goto skip;
+        goto skip_first_pass;
 
         while (i <= end_pos) {
             if (i == next_var_pos) {
@@ -358,7 +358,7 @@ void VcfWriter::print_gvcf_span(
                 goto breakblock;
             }
 
-            goto skip;
+            goto skip_break;
 
         breakblock:
             // break this non-variant block
@@ -428,12 +428,13 @@ void VcfWriter::print_gvcf_span(
             k = 0;
             prev_block = i;
 
-        skip:
+        skip_break:
+            ++i;
+        skip_first_pass:
+            ++k;
             block_vr.add_value(vr_cov);
             block_rr.add_value(rr_cov);
             block_dp.add_value(dp_cov);
-            ++k;
-            ++i;
         }
     }
 }
@@ -597,8 +598,10 @@ void VcfWriter::print_snp_buffer(int32_t next_var_pos, const bed_coord_t &seg)
                     bcf_add_filter(_snp_hdr, _snp_rec, _snp_filter_idx[SNP_FILTER_HIGH_COVERAGE]);
                 }
 
-                if (dp_cov >= _opts->snp_strand_cutoff &&
-                    std::min((double)called_snp._pos_strand / var_cov, (double)(called_snp._read_count - called_snp._pos_strand) / var_cov) < _opts->snp_strand_ratio_cutoff) {
+                if (_opts->enable_snp_strand_cutoff &&
+                    dp_cov >= _opts->snp_strand_cutoff &&
+                    std::min((double)called_snp._pos_strand / var_cov, (double)(called_snp._read_count - called_snp._pos_strand) / var_cov) < _opts->snp_strand_ratio_cutoff)
+                {
                     bcf_add_filter(_snp_hdr, _snp_rec, _snp_filter_idx[SNP_FILTER_SINGLE_STRAND]);
                 }
 

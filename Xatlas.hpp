@@ -37,6 +37,7 @@ typedef struct opts {
 
     coverage_t snp_min_dp;
     coverage_t snp_min_vr;
+    bool enable_snp_strand_cutoff;
     coverage_t snp_strand_cutoff;
     double snp_strand_ratio_cutoff;
     int32_t snp_near_end_bases;

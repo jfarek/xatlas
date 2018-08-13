@@ -24,8 +24,8 @@ Bam::Bam(const char *sf_fn, const char *ref_fn, uint8_t nthreads)
       _hdr(nullptr),
       _status(BAM_OKAY)
 {
-    size_t fn_strlen = strlen(sf_fn);
-    size_t ref_fn_strlen = strlen(ref_fn);
+    size_t fn_strlen = std::strlen(sf_fn);
+    size_t ref_fn_strlen = std::strlen(ref_fn);
     int set_fai_status;
     _status = BAM_OKAY;
 

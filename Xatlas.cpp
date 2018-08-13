@@ -51,6 +51,7 @@ Options:\n\
     -z, --bgzf                      Write output in bgzip-compressed VCF format\n\
     -S, --snp-logit-params FILE     File with intercept and coefficients for SNP logit model\n\
     -I, --indel-logit-params FILE   File with intercept and coefficients for indel logit model\n\
+    -F, --enable-strand-filter      Enable SNP filter for single-strandedness\n\
     -h, --help                      Show this help\n\
 ";
 
@@ -231,13 +232,13 @@ void *process_records_indel(void *arg)
                 args->events->_last_call_indel = region.first - 1;
             }
             args->writer->print_gvcf_span(region.second + 1,
-                                        args->events->_last_call_indel,
-                                        region.second,
-                                        false,
-                                        args->writer->_prev_del,
-                                        COVSIDX_INDEL_VR,
-                                        COVSIDX_INDEL_RR,
-                                        COVSIDX_INDEL_DP);
+                args->events->_last_call_indel,
+                region.second,
+                false,
+                args->writer->_prev_del,
+                COVSIDX_INDEL_VR,
+                COVSIDX_INDEL_RR,
+                COVSIDX_INDEL_DP);
         }
 
         args->writer->_prev_del = false;
@@ -276,13 +277,13 @@ void *process_records_snp(void *arg)
                 args->events->_last_call_snp = region.first - 1;
             }
             args->writer->print_gvcf_span(region.second + 1,
-                                        args->events->_last_call_snp,
-                                        region.second,
-                                        true,
-                                        false,
-                                        COVSIDX_SNP_VR,
-                                        COVSIDX_SNP_RR,
-                                        COVSIDX_SNP_DP);
+                args->events->_last_call_snp,
+                region.second,
+                true,
+                false,
+                COVSIDX_SNP_VR,
+                COVSIDX_SNP_RR,
+                COVSIDX_SNP_DP);
         }
 
         pthread_barrier_wait(&args->barriers[3]);
@@ -541,6 +542,7 @@ int main(int argc, char **argv)
 
     opts.snp_min_dp = 6;
     opts.snp_min_vr = 2;
+    opts.enable_snp_strand_cutoff = false;
     opts.snp_strand_cutoff = 16;
     opts.snp_strand_ratio_cutoff = 0.01;
     opts.snp_near_end_bases = 3;
@@ -579,31 +581,32 @@ int main(int argc, char **argv)
 
     int c, optidx;
     static struct option long_options[] = {
-        {"ref", 1, nullptr, 0},                // r
-        {"in", 1, nullptr, 0},                 // i
-        {"sample-name", 1, nullptr, 0},        // s
-        {"prefix", 1, nullptr, 0},             // p
-        {"multithread", 0, nullptr, 0},        // P
-        {"num-hts-threads", 1, nullptr, 0},    // t
-        {"capture-bed", 1, nullptr, 0},        // c
-        {"min-p-value", 1, nullptr, 0},        // v
-        {"min-snp-mapq", 1, nullptr, 0},       // m
-        {"min-indel-mapq", 1, nullptr, 0},     // n
-        {"max-coverage", 1, nullptr, 0},       // M
-        {"block-abs-lim", 1, nullptr, 0},      // A
-        {"block-rel-lim", 1, nullptr, 0},      // R
-        {"gvcf", 0, nullptr, 0},               // g
-        {"bgzf", 0, nullptr, 0},               // z
-        {"snp-logit-params", 1, nullptr, 0},   // S
-        {"indel-logit-params", 1, nullptr, 0}, // I
-        {"help", 0, nullptr, 0},               // h
+        {"ref", 1, nullptr, 0},                     // r
+        {"in", 1, nullptr, 0},                      // i
+        {"sample-name", 1, nullptr, 0},             // s
+        {"prefix", 1, nullptr, 0},                  // p
+        {"multithread", 0, nullptr, 0},             // P
+        {"num-hts-threads", 1, nullptr, 0},         // t
+        {"capture-bed", 1, nullptr, 0},             // c
+        {"min-p-value", 1, nullptr, 0},             // v
+        {"min-snp-mapq", 1, nullptr, 0},            // m
+        {"min-indel-mapq", 1, nullptr, 0},          // n
+        {"max-coverage", 1, nullptr, 0},            // M
+        {"block-abs-lim", 1, nullptr, 0},           // A
+        {"block-rel-lim", 1, nullptr, 0},           // R
+        {"gvcf", 0, nullptr, 0},                    // g
+        {"bgzf", 0, nullptr, 0},                    // z
+        {"snp-logit-params", 1, nullptr, 0},        // S
+        {"indel-logit-params", 1, nullptr, 0},      // I
+        {"enable-strand-filter", 0, nullptr, 0},    // F
+        {"help", 0, nullptr, 0},                    // h
         // hidden options
         {"dump-snp", 0, nullptr, 0},       // Z
         {"dump-indel", 0, nullptr, 0},     // Y
         //{"read-end-score", 0, nullptr, 0}, // X
         {nullptr, 0, nullptr, 0}};
-    const char *short_options = "0r:i:s:p:Pt:c:v:m:n:M:A:R:gzS:I:hZY";
-    const char *shorter_options = "rispPtcvmnMARgzSIhZY";
+    const char *short_options = "0r:i:s:p:Pt:c:v:m:n:M:A:R:gzS:I:FhZY";
+    const char *shorter_options = "rispPtcvmnMARgzSIFhZY";
 
     if (argc == 1) {
         usage();
@@ -666,6 +669,9 @@ int main(int argc, char **argv)
             break;
         case 'I': // indel-logit-params
             read_logit_params(&logit_params, optarg, false);
+            break;
+        case 'F': // enable-strand-filter
+            opts.enable_snp_strand_cutoff = true;
             break;
         case 'Z': // dump-snp
             opts.dumpsnp = true;
@@ -793,10 +799,12 @@ int main(int argc, char **argv)
         std::cerr << "Unable to create INDEL header" << std::endl;
         exit(EXIT_FAILURE);
     }
+    bcf_hdr_set_version(indel_hdr, "VCFv4.3");
     if ((snp_hdr = bcf_hdr_init("w")) == nullptr) {
         std::cerr << "Unable to create SNP header" << std::endl;
         exit(EXIT_FAILURE);
     }
+    bcf_hdr_set_version(snp_hdr, "VCFv4.3");
 
     // Which regions
 
