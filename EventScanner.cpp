@@ -53,8 +53,8 @@ void EventScanner::collect_indels(
     bool strand, first_op;
     uint8_t *bseq;
     uint32_t var_count, c_op, c_type, *cigar, *end_cigar;
-    int32_t c_len, pos1, pos2, end_pos, indel_pos, left_align_pos;
-    int32_t q_pos, r_pos, leading_sclip, tailing_sclip;
+    int32_t c_len, pos1, pos2, end_pos, left_align_pos;
+    int32_t q_pos, r_pos, leading_sclip, tailing_sclip, prev_match_start;
     std::string seq;
     AReadsIndelList this_reads_indels;
 
@@ -62,9 +62,8 @@ void EventScanner::collect_indels(
     var_count = 0;
     cigar = bam_get_cigar(read);
     end_cigar = cigar + read->core.n_cigar - 1;
-    indel_pos = read->core.pos;
+    r_pos = read->core.pos;
     q_pos = 0;
-    r_pos = 0;
     leading_sclip = (bam_cigar_op(*cigar) == BAM_CSOFT_CLIP)
                         ? bam_cigar_oplen(*cigar)
                         : 0;
@@ -74,8 +73,11 @@ void EventScanner::collect_indels(
     bseq = bam_get_seq(read);
     strand = (bam_is_rev(read) == 0);
 
-    // for adjust reference coverage, deque of (pos, size)
+    // terrible hack for left-aligning indels on top of this cigar loop
+    // RR and deletion deque of (pos, size)
     std::deque<std::pair<int32_t, int32_t>> coverage_rr_vec, coverage_del_vec;
+    // start of previous match as left bound of alignment, default to read start
+    prev_match_start = read->core.pos;
 
     for (; cigar <= end_cigar; ++cigar) {
         c_op = bam_cigar_op(*cigar);
@@ -84,11 +86,11 @@ void EventScanner::collect_indels(
         // coverage and events
         switch (c_op) {
         case BAM_CMATCH:
-            //coverages.add_coverage_range(indel_pos, COVSIDX_INDEL_RR, c_len);
-            coverage_rr_vec.push_back(std::make_pair(indel_pos, c_len));
-            coverages.add_coverage_range(indel_pos, COVSIDX_INDEL_DP, c_len);
+            //coverages.add_coverage_range(r_pos, COVSIDX_INDEL_RR, c_len);
+            coverage_rr_vec.push_back(std::make_pair(r_pos, c_len));
+            coverages.add_coverage_range(r_pos, COVSIDX_INDEL_DP, c_len);
             pos1 = q_pos + leading_sclip;
-            pos2 = read->core.pos + r_pos;
+            pos2 = r_pos;
             end_pos = pos1 + c_len;
             while (pos1 < end_pos) {
                 if (seq_nt16_str[bam_seqi(bseq, pos1)] != refseq._seq[pos2]) {
@@ -97,17 +99,18 @@ void EventScanner::collect_indels(
                 ++pos1;
                 ++pos2;
             }
+            prev_match_start = r_pos;
             break;
         case BAM_CREF_SKIP:
         case BAM_CEQUAL:
-            //coverages.add_coverage_range(indel_pos, COVSIDX_INDEL_RR, c_len);
-            coverage_rr_vec.push_back(std::make_pair(indel_pos, c_len));
-            coverages.add_coverage_range(indel_pos, COVSIDX_INDEL_DP, c_len);
+            //coverages.add_coverage_range(r_pos, COVSIDX_INDEL_RR, c_len);
+            coverage_rr_vec.push_back(std::make_pair(r_pos, c_len));
+            coverages.add_coverage_range(r_pos, COVSIDX_INDEL_DP, c_len);
             break;
         case BAM_CDIFF:
-            //coverages.add_coverage_range(indel_pos, COVSIDX_INDEL_RR, c_len);
-            coverage_rr_vec.push_back(std::make_pair(indel_pos, c_len));
-            coverages.add_coverage_range(indel_pos, COVSIDX_INDEL_DP, c_len);
+            //coverages.add_coverage_range(r_pos, COVSIDX_INDEL_RR, c_len);
+            coverage_rr_vec.push_back(std::make_pair(r_pos, c_len));
+            coverages.add_coverage_range(r_pos, COVSIDX_INDEL_DP, c_len);
             var_count += c_len;
             break;
         case BAM_CINS:
@@ -118,11 +121,11 @@ void EventScanner::collect_indels(
                 seq.push_back(seq_nt16_str[bam_seqi(bseq, pos1)]);
                 ++pos1;
             }
-            left_align_pos = left_align(refseq, seq, indel_pos, read->core.pos);
+            left_align_pos = left_align(refseq, seq, r_pos, prev_match_start);
 
             // rotate seq if different left align position
-            if (left_align_pos != indel_pos) {
-                std::rotate(seq.begin(), seq.begin() + c_len - (indel_pos - left_align_pos) % c_len, seq.end());
+            if (left_align_pos != r_pos) {
+                std::rotate(seq.begin(), seq.begin() + c_len - (r_pos - left_align_pos) % c_len, seq.end());
             }
 
             if (left_align_pos >= segment.first &&
@@ -137,20 +140,20 @@ void EventScanner::collect_indels(
                         strand,
                         read->core.qual));
             }
-            if (!first_op && indel_pos >= 1) {
+            if (!first_op && r_pos >= 1) {
                 coverages.add_coverage(left_align_pos - 1, COVSIDX_INDEL_RR_INS);
             }
             ++var_count;
             break;
         case BAM_CDEL:
-            pos1 = r_pos + leading_sclip;
+            pos1 = r_pos;
             end_pos = pos1 + c_len;
             seq.clear();
             while (pos1 < end_pos) {
                 seq.push_back(refseq._seq[pos1]);
                 ++pos1;
             }
-            left_align_pos = left_align(refseq, seq, indel_pos, read->core.pos);
+            left_align_pos = left_align(refseq, seq, r_pos, prev_match_start);
             seq.clear();
             if (left_align_pos >= segment.first &&
                 left_align_pos <= segment.second &&
@@ -165,7 +168,7 @@ void EventScanner::collect_indels(
                         strand,
                         read->core.qual));
             }
-            coverages.add_coverage_range(indel_pos, COVSIDX_INDEL_DP, c_len);
+            coverages.add_coverage_range(r_pos, COVSIDX_INDEL_DP, c_len);
             coverage_del_vec.push_back(std::make_pair(left_align_pos, c_len));
             ++var_count;
             break;
@@ -180,7 +183,6 @@ void EventScanner::collect_indels(
         }
         if ((c_type & 0x02) != 0) {
             r_pos += c_len;
-            indel_pos += c_len;
         }
     }
 
@@ -198,10 +200,12 @@ void EventScanner::collect_indels(
             if (next_del_pos >= end) {
                 break;
             }
-            coverages.add_coverage_range(pos, COVSIDX_INDEL_RR, next_del_pos - pos);
-            next_del_size = del_itr.second;
-            pos += next_del_size;
-            end += next_del_size;
+            if (next_del_pos >= pos) {
+                coverages.add_coverage_range(pos, COVSIDX_INDEL_RR, next_del_pos - pos);
+                next_del_size = del_itr.second;
+                pos = next_del_pos + next_del_size;
+                end += next_del_size;
+            }
         }
 
         coverages.add_coverage_range(pos, COVSIDX_INDEL_RR, end - pos);
