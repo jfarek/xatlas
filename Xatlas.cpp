@@ -868,8 +868,8 @@ int main(int argc, char **argv)
     int32_t max_len = 0;
     for (const auto &bed_coord : bedlist) {
         for (const auto &coord : bed_coord.second) {
-            if (coord.second > max_len) {
-                max_len = coord.second;
+            if (coord.second + 1 > max_len) {
+                max_len = coord.second + 1;
             }
         }
     }
