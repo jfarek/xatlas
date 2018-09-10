@@ -1,5 +1,5 @@
 dnl If anyone wants to improve on this go right ahead
-AC_INIT([xAtlas], 0.2)
+AC_INIT([xAtlas], 0.2.1)
 AC_PREREQ([2.63])
 AC_CONFIG_HEADERS([config.h])
 
