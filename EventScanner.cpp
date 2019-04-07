@@ -65,11 +65,11 @@ void EventScanner::collect_indels(
     r_pos = read->core.pos;
     q_pos = 0;
     leading_sclip = (bam_cigar_op(*cigar) == BAM_CSOFT_CLIP)
-                        ? bam_cigar_oplen(*cigar)
-                        : 0;
+        ? bam_cigar_oplen(*cigar)
+        : 0;
     tailing_sclip = (bam_cigar_op(*end_cigar) == BAM_CSOFT_CLIP)
-                        ? bam_cigar_oplen(*end_cigar)
-                        : 0;
+        ? bam_cigar_oplen(*end_cigar)
+        : 0;
     bseq = bam_get_seq(read);
     strand = (bam_is_rev(read) == 0);
 
@@ -276,13 +276,18 @@ inline double EventScanner::snp_nqs(int32_t p, int32_t qlen, const uint8_t *bqua
     return (double)qual_sum / 10.0; // NOTE adjust for near read ends
 }
 
-void EventScanner::collect_snps(bam1_t *read, const ReferenceSequence &refseq, CoverageCounter &coverages, bed_coord_t &segment)
+void EventScanner::collect_snps(
+        bam1_t *read,
+        const ReferenceSequence &refseq,
+        CoverageCounter &coverages,
+        bed_coord_t& segment)
 {
     bool strand;
     char refbase, allele;
-    uint8_t snp_nt_gap, nm_minus_gap, snp_nt_sub, snp_nt_snp, *bseq, *bqual;
-    uint32_t *cigar, *cigar0, *end_cigar;
-    int32_t c_len, len, pos1, pos2, r_pos, q_pos;
+    uint8_t *bseq, *bqual;
+    uint32_t *cigar, *cigar0, *end_cigar, c_op, c_type;
+    int32_t snp_nt_gap, nm, nm_minus_gap, snp_nt_sub, snp_nt_snp;
+    int32_t c_len, len, pos1, pos2, end_pos, r_pos, q_pos, leading_sclip;
     AReadsSnpList this_reads_snps;
 
     snp_nt_gap = 0;
@@ -292,20 +297,50 @@ void EventScanner::collect_snps(bam1_t *read, const ReferenceSequence &refseq, C
     end_cigar = cigar + read->core.n_cigar - 1;
 
     // snp sub and gap
+    nm = 0;
+    q_pos = 0;
+    r_pos = read->core.pos;
+    bseq = bam_get_seq(read);
+    leading_sclip = (bam_cigar_op(*cigar) == BAM_CSOFT_CLIP) ? bam_cigar_oplen(*cigar) : 0;
+
     while (cigar <= end_cigar) {
-        switch (bam_cigar_op(*cigar)) {
+        c_op = bam_cigar_op(*cigar);
+        c_len = (int32_t)bam_cigar_oplen(*cigar);
+
+        switch (c_op) {
+        case BAM_CMATCH:
+            pos1 = q_pos + leading_sclip;
+            pos2 = r_pos;
+            end_pos = pos1 + c_len;
+            while (pos1 < end_pos) {
+                if (seq_nt16_str[bam_seqi(bseq, pos1)] != refseq._seq[pos2]) {
+                    ++nm;
+                }
+                ++pos1;
+                ++pos2;
+            }
+            break;
         case BAM_CINS:
         case BAM_CDEL:
-            snp_nt_gap += bam_cigar_oplen(*cigar);
+            snp_nt_gap += c_len;
+            nm += c_len;
             break;
         default:
             break;
         }
 
+        c_type = bam_cigar_type(*cigar);
+        if ((c_type & 0x01) != 0 && c_op != BAM_CSOFT_CLIP) {
+            q_pos += c_len;
+        }
+        if ((c_type & 0x02) != 0) {
+            r_pos += c_len;
+        }
+
         ++cigar;
     }
 
-    nm_minus_gap = bam_aux2i(bam_aux_get(read, "NM")) - snp_nt_gap;
+    nm_minus_gap = nm - snp_nt_gap;
     snp_nt_sub = nm_minus_gap;
 
     if ((double)snp_nt_sub / len > _snp_max_sub ||
