@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+namespace xatlas {
+
 class GvcfBlock
 {
   private:
@@ -28,5 +30,7 @@ class GvcfBlock
     double get_std_dev(uint32_t k);
     double get_mean(uint32_t k);
 };
+
+} // namepace xatlas
 
 #endif /* _XATLAS_BLOCKSTATS_H */

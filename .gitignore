@@ -1,12 +1,4 @@
-/autom4te.cache
+._*
+.DS_Store
 /build
-/config.h
-/config.log
-/config.status
-/configure
-/hgsc.mk
-/Makefile
-/*.o
-/README.html
 /scratch
-/xatlas

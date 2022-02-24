@@ -1,13 +1,17 @@
 #ifndef _XATLAS_VCFWRITER_H
 #define _XATLAS_VCFWRITER_H
 
+#include <cstdint>
+#include <string>
+
+#include "htslib/vcf.h"
+
 #include "xatlas/CoverageCounter.h"
 #include "xatlas/EventScanner.h"
 #include "xatlas/Logit.h"
 #include "xatlas/Xatlas.h"
-#include "htslib/vcf.h"
-#include <cstdint>
-#include <string>
+
+namespace xatlas {
 
 enum snp_filter_idx {
     SNP_FILTER_PASS = 0,
@@ -131,5 +135,7 @@ class VcfWriter
     void print_snp_buffer(int32_t next_var_pos, const bed_coord_t &seg);
     void print_indel_buffer(int32_t next_var_pos, const bed_coord_t &seg);
 };
+
+} // namepace xatlas
 
 #endif /* _XATLAS_VCFWRITER_H */

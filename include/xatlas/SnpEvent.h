@@ -3,6 +3,8 @@
 
 #include "xatlas/Xatlas.h"
 
+namespace xatlas {
+
 class SnpEvent
 {
   private:
@@ -25,5 +27,7 @@ class SnpEvent
     double get_nqs();
     double titv(char ref);
 };
+
+} // namepace xatlas
 
 #endif /* _XATLAS_SNPEVENT_H */

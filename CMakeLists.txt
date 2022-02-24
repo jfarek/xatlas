@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 # target: xatlas
 
@@ -37,30 +37,10 @@ set_target_properties(xatlas
 
 # xatlas: dependencies
 
-## pthread
-
-if(PTHREADLIB_PREFIX)
-    # using custom htslib prefix
-    find_library(PTHREADLIB
-        NAMES pthread
-        PATHS "${PTHREADLIB_PREFIX}/lib"
-        REQUIRED
-    )
-    target_include_directories(xatlas
-        PUBLIC
-        "${PTHREADLIB_PREFIX}/include")
-else()
-    # using default search paths
-    find_library(PTHREADLIB
-        NAMES pthread
-        REQUIRED
-    )
-endif()
-
 ## HTSlib
 
 #set(HTSLIB_PREFIX "/hgsc_software/htslib/htslib-1.10")
-if(HTSLIB_PREFIX)
+if(DEFINED HTSLIB_PREFIX)
     # using custom htslib prefix
     find_library(HTSLIB
         NAMES hts
@@ -75,6 +55,26 @@ else()
     # using default search paths
     find_library(HTSLIB
         NAMES hts
+        REQUIRED
+    )
+endif()
+
+## pthread
+
+if(DEFINED PTHREADLIB_PREFIX)
+    # using custom htslib prefix
+    find_library(PTHREADLIB
+        NAMES pthread
+        PATHS "${PTHREADLIB_PREFIX}/lib"
+        REQUIRED
+    )
+    target_include_directories(xatlas
+        PUBLIC
+        "${PTHREADLIB_PREFIX}/include")
+else()
+    # using default search paths
+    find_library(PTHREADLIB
+        NAMES pthread
         REQUIRED
     )
 endif()

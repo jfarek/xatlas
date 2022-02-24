@@ -1,5 +1,8 @@
-#include "xatlas/Logit.h"
 #include <cmath>
+
+#include "xatlas/Logit.h"
+
+namespace xatlas {
 
 // \frac{1}{1/e^{-x}}
 
@@ -22,3 +25,5 @@ double indel_logit(indel_logit_params_s *params, indel_logit_values_s *values)
                                  std::fma(params->mean_var_rate, values->mean_var_rate,
                                  params->intercept)))))));
 }
+
+} // namepace xatlas

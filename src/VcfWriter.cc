@@ -1,5 +1,3 @@
-#include "xatlas/VcfWriter.h"
-#include "xatlas/GvcfBlock.h"
 #include <algorithm>
 #include <cmath>
 #include <ctime>
@@ -7,6 +5,11 @@
 #include <cstring>
 #include <iostream>
 #include <sstream>
+
+#include "xatlas/VcfWriter.h"
+#include "xatlas/GvcfBlock.h"
+
+namespace xatlas {
 
 /**
  * Main VCF writing facilities
@@ -1022,3 +1025,5 @@ void VcfWriter::print_indel_buffer(int32_t next_var_pos, const bed_coord_t &seg)
     // Clear processed indels from _indels
     _events->_indels.erase(_events->_indels.begin(), iv_it);
 }
+
+} // namepace xatlas

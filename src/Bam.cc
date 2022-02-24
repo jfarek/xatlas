@@ -1,6 +1,9 @@
-#include "xatlas/Bam.h"
 #include <cstring>
 #include <cstdlib>
+
+#include "xatlas/Bam.h"
+
+namespace xatlas {
 
 /**
  * Handle BAM or CRAM file
@@ -89,3 +92,5 @@ void Bam::set_iter(const char *region_str)
     hts_itr_destroy(_iter);
     _iter = sam_itr_querys(_idx, _hdr, region_str);
 }
+
+} // namepace xatlas

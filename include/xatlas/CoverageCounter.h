@@ -3,7 +3,11 @@
 
 #include "xatlas/Xatlas.h"
 
-#define COVS_ALIGN 7
+//#define COVS_ALIGN 7
+
+namespace xatlas {
+
+const size_t COVS_ALIGN = 7;
 
 enum covs_idx {
     COVSIDX_INDEL_VR = 0,
@@ -41,5 +45,7 @@ class CoverageCounter
     bool test_high_coverage(int32_t pos, covs_idx_e idx, int32_t l_qseq);
     coverage_t get_max_coverage();
 };
+
+} // namepace xatlas
 
 #endif /* _XATLAS_COVERAGECOUNTER_H */

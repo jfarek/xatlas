@@ -1,10 +1,13 @@
 #ifndef _XATLAS_INDELEVENT_H
 #define _XATLAS_INDELEVENT_H
 
+#include <cstdint>
+
 #include "xatlas/CoverageCounter.h"
 #include "xatlas/ReferenceSequence.h"
 #include "xatlas/Xatlas.h"
-#include <cstdint>
+
+namespace xatlas {
 
 enum strand_mask {
     strand_mask_none = 0x00,
@@ -53,5 +56,7 @@ class IndelEvent
     double get_mean_avg_nqs();
     double get_mean_var_rate();
 };
+
+} // namepace xatlas
 
 #endif /* _XATLAS_INDELEVENT_H */

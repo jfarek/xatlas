@@ -1,5 +1,8 @@
-#include "xatlas/ReferenceSequence.h"
 #include <cstring>
+
+#include "xatlas/ReferenceSequence.h"
+
+namespace xatlas {
 
 /**
  * Handle reference FASTA
@@ -58,3 +61,5 @@ void ReferenceSequence::set_region(const char *region)
         }
     }
 }
+
+} // namepace xatlas

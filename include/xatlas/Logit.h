@@ -1,6 +1,8 @@
 #ifndef _XATLAS_LOGIT_H
 #define _XATLAS_LOGIT_H
 
+namespace xatlas {
+
 /* logit model parameters */
 
 struct snp_logit_params {
@@ -51,5 +53,7 @@ typedef struct indel_logit_values indel_logit_values_s;
 
 double snp_logit(snp_logit_params_s *params, snp_logit_values_s *values);
 double indel_logit(indel_logit_params_s *params, indel_logit_values_s *values);
+
+} // namepace xatlas
 
 #endif /* _XATLAS_LOGIT_H */

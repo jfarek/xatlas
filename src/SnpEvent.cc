@@ -1,5 +1,8 @@
-#include "xatlas/SnpEvent.h"
 #include <cmath>
+
+#include "xatlas/SnpEvent.h"
+
+namespace xatlas {
 
 SnpEvent::SnpEvent()
     : _allele_base(0),
@@ -73,3 +76,5 @@ double SnpEvent::titv(char ref)
 
     return titv;
 }
+
+} // namepace xatlas

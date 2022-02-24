@@ -1,8 +1,11 @@
 #ifndef _XATLAS_SEQUENCE_H
 #define _XATLAS_SEQUENCE_H
 
-#include "xatlas/Xatlas.h"
 #include "htslib/faidx.h"
+
+#include "xatlas/Xatlas.h"
+
+namespace xatlas {
 
 enum fai_status {
     FAI_OKAY = 0,
@@ -26,5 +29,7 @@ class ReferenceSequence
     ~ReferenceSequence();
     void set_region(const char *region);
 };
+
+} // namepace xatlas
 
 #endif /* _XATLAS_SEQUENCE_H */

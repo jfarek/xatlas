@@ -1,6 +1,9 @@
-#include "xatlas/GvcfBlock.h"
 #include <algorithm>
 #include <cmath>
+
+#include "xatlas/GvcfBlock.h"
+
+namespace xatlas {
 
 /**
  * Calculations for non-variant gVCF blocks
@@ -72,3 +75,5 @@ void GvcfBlock::reset()
     _sum = 0.0;
     _sum_sq = 0.0;
 }
+
+} // namepace xatlas

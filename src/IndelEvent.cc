@@ -1,6 +1,9 @@
-#include "xatlas/IndelEvent.h"
 #include <cmath>
 #include <cstring>
+
+#include "xatlas/IndelEvent.h"
+
+namespace xatlas {
 
 IndelEvent::IndelEvent()
     : _strand_mask(strand_mask_none),
@@ -152,3 +155,5 @@ double IndelEvent::get_mean_var_rate()
 {
     return (double)_var_rate_gap_and_mismatch / _read_count;
 }
+
+} // namepace xatlas

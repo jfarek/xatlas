@@ -1,5 +1,8 @@
-#include "xatlas/CoverageCounter.h"
 #include <cstring>
+
+#include "xatlas/CoverageCounter.h"
+
+namespace xatlas {
 
 CoverageCounter::CoverageCounter()
     : _covs(nullptr),
@@ -134,3 +137,5 @@ coverage_t CoverageCounter::get_max_coverage()
 {
     return _max_cov;
 }
+
+} // namepace xatlas

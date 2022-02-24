@@ -1,6 +1,0 @@
-#ifndef _XATLAS_CONFIG_H
-#define _XATLAS_CONFIG_H
-
-#undef USE_PTHREAD
-
-#endif /* _XATLAS_CONFIG_H */

@@ -5,6 +5,8 @@
 #include "htslib/sam.h"
 #include "htslib/thread_pool.h"
 
+namespace xatlas {
+
 enum bam_status {
     BAM_OKAY = 0,
     BAM_BAD_FILE,
@@ -33,5 +35,7 @@ class Bam
     ~Bam();
     void set_iter(const char *where);
 };
+
+} // namepace xatlas
 
 #endif /* _XATLAS_BAM_H */

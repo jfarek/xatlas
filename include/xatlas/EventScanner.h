@@ -1,10 +1,13 @@
 #ifndef _XATLAS_EVENTHOLDER_H
 #define _XATLAS_EVENTHOLDER_H
 
+#include "htslib/sam.h"
+
 #include "xatlas/IndelEvent.h"
 #include "xatlas/SnpEvent.h"
 #include "xatlas/Xatlas.h"
-#include "htslib/sam.h"
+
+namespace xatlas {
 
 /* position -> allele/variant id -> variant set */
 typedef std::map< int32_t, std::map< char, SnpEvent > > SnpMap;
@@ -44,5 +47,7 @@ class EventScanner
         CoverageCounter &coverages,
         bed_coord_t &segment);
 };
+
+} // namepace xatlas
 
 #endif /* _XATLAS_EVENTHOLDER_H */

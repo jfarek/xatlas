@@ -1,3 +1,14 @@
+#include <algorithm>
+#include <cstring>
+#include <fstream>
+#include <getopt.h>
+#include <iostream>
+#include <sstream>
+
+#include "htslib/faidx.h"
+#include "htslib/sam.h"
+#include "htslib/vcf.h"
+
 #include "xatlas/Xatlas.h"
 #include "xatlas/Bam.h"
 #include "xatlas/CoverageCounter.h"
@@ -7,17 +18,10 @@
 #include "xatlas/ReferenceSequence.h"
 #include "xatlas/SnpEvent.h"
 #include "xatlas/VcfWriter.h"
-#include "htslib/faidx.h"
-#include "htslib/sam.h"
-#include "htslib/vcf.h"
-#include <algorithm>
-#include <cstring>
-#include <fstream>
-#include <getopt.h>
-#include <iostream>
-#include <sstream>
 
 /* ------===< xAtlas >===------ */
+
+namespace xatlas {
 
 static const char *help = "\
 Required arguments:\n\
@@ -80,9 +84,7 @@ struct args {
 
     void (*regions_itr_func)(struct args *);
 
-#ifdef USE_PTHREAD
     pthread_barrier_t barriers[4];
-#endif /* USE_PTHREAD */
 };
 typedef struct args args_s;
 
@@ -192,7 +194,6 @@ void process_records_indel_section(args_s *args, bed_coord_t &region)
     }
 }
 
-#ifdef USE_PTHREAD
 void *process_records_indel(void *arg)
 {
     args_s *args = (args_s *)arg;
@@ -313,7 +314,6 @@ void read_bam(args_s *args)
 
     pthread_barrier_wait(&args->barriers[3]);
 }
-#endif /* USE_PTHREAD */
 
 /**
  * Single-threaded reading and processing
@@ -444,14 +444,12 @@ void iterate_regions(args_s *args)
     }
 }
 
-#ifdef USE_PTHREAD
 void *iterate_regions_pt(void *arg)
 {
     iterate_regions((args_s *)arg);
 
     pthread_exit(nullptr);
 }
-#endif /* USE_PTHREAD */
 
 void read_logit_params(logit_params_s *logit_params, const char *fn, bool snp)
 {
@@ -496,7 +494,7 @@ void usage()
               << help << std::endl;
 }
 
-int main(int argc, char **argv)
+int xatlas_main(int argc, char **argv)
 {
     bool do_multithreading = false;
     char *ref = nullptr;
@@ -907,7 +905,6 @@ int main(int argc, char **argv)
     args.more_chrs = true;
 
     if (do_multithreading) {
-#ifdef USE_PTHREAD
         args.regions_itr_func = read_bam;
 
         for (size_t i = 0; i < 4; ++i) {
@@ -952,17 +949,9 @@ int main(int argc, char **argv)
             pthread_barrier_destroy(&args.barriers[i]);
         }
     } else {
-#else
-        std::cerr << "Multithreading not supported in this build of xAtlas" << std::endl;
-    }
-#endif /* USE_PTHREAD */
-
         args.regions_itr_func = read_and_process_bam;
         iterate_regions(&args);
-
-#ifdef USE_PTHREAD
     }
-#endif /* USE_PTHREAD */
 
     for (uint32_t k = 0; k < args.buff_size; ++k) {
         bam_destroy1(args.rec_buff[k]);
@@ -977,4 +966,11 @@ int main(int argc, char **argv)
     std::cerr << "Finished" << std::endl;
 
     return EXIT_SUCCESS;
+}
+
+} // namespace xatlas
+
+int main(int argc, char **argv)
+{
+    return xatlas::xatlas_main(argc, argv);
 }

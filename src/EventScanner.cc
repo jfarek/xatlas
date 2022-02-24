@@ -1,6 +1,9 @@
 #include <algorithm>
 #include <deque>
+
 #include "xatlas/EventScanner.h"
+
+namespace xatlas {
 
 EventScanner::EventScanner()
 {
@@ -459,3 +462,5 @@ void EventScanner::collect_snps(
         }
     }
 }
+
+} // namepace xatlas
