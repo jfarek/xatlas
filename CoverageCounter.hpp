@@ -39,6 +39,7 @@ class CoverageCounter
     void set_coverage(int32_t pos, covs_idx_e idx, coverage_t cov);
     coverage_t get_coverage(int32_t pos, covs_idx_e idx);
     bool test_high_coverage(int32_t pos, covs_idx_e idx, int32_t l_qseq);
+    coverage_t get_max_coverage();
 };
 
 #endif /* _XATLAS_COVERAGECOUNTER_H */

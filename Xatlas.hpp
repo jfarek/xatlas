@@ -8,7 +8,7 @@
 #include <vector>
 
 #define XATLAS_NAME    "xAtlas"
-#define XATLAS_VERSION "0.2.1"
+#define XATLAS_VERSION "0.3"
 
 typedef uint16_t qual_t;
 typedef uint16_t coverage_t;

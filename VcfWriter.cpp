@@ -102,7 +102,7 @@ void VcfWriter::setup_vcf_header(
 
     std::strncpy(buffer, "##command=", BUFFER_SIZE);
     for (int i = 0; i < argc; ++i) {
-        std::strncat(buffer, argv[i], std::strlen(argv[i]));
+        std::strncat(buffer, argv[i], BUFFER_SIZE - 1);
         if (i != argc - 1) {
             std::strncat(buffer, " ", 2);
         }
@@ -416,7 +416,10 @@ void VcfWriter::print_gvcf_span(
             float_arr[3] = (float)block_dp.get_std_dev(k);
             bcf_update_format_float(hdr, rec, "DPX", float_arr, 4);
 
-            bcf_write1(fp, hdr, rec);
+            if (bcf_write1(fp, hdr, rec)) {
+                std::cerr << "Failed to write VCF record" << std::endl;
+                exit(EXIT_FAILURE);
+            }
 
             if (endofregion) {
                 break;
@@ -498,6 +501,7 @@ void VcfWriter::print_snp_buffer(int32_t next_var_pos, const bed_coord_t &seg)
 
         refbase = _sequences->_seq[sv_it->first];
         total_coverage = _coverages->get_coverage(sv_it->first, COVSIDX_SNP_DP) + ar_cov;
+        std::memset(pl_arr, 0, sizeof pl_arr);
 
         // dump snp logit varible values for retraining
         if (_opts->dumpsnp) {
@@ -560,7 +564,7 @@ void VcfWriter::print_snp_buffer(int32_t next_var_pos, const bed_coord_t &seg)
             // P-value and coverage for allele with most supporting reads
             auto &called_snp = sv_it->second.at(high_base);
 
-            var_cov = called_snp._read_count;
+            var_cov = (coverage_t)std::min(called_snp._read_count, (uint32_t)_coverages->get_max_coverage());
             _coverages->set_coverage(sv_it->first, COVSIDX_SNP_VR, var_cov);
             _coverages->add_coverage(sv_it->first, COVSIDX_SNP_DP, var_cov);
 
@@ -688,7 +692,10 @@ void VcfWriter::print_snp_buffer(int32_t next_var_pos, const bed_coord_t &seg)
             bcf_update_format_int32(_snp_hdr, _snp_rec, "GQ", &_gt_missing, 1);
             bcf_update_format_int32(_snp_hdr, _snp_rec, "PL", &pl_arr, 3);
 
-            bcf_write1(_snp_fp, _snp_hdr, _snp_rec);
+            if (bcf_write1(_snp_fp, _snp_hdr, _snp_rec)) {
+                std::cerr << "Failed to write VCF record" << std::endl;
+                exit(EXIT_FAILURE);
+            }
         }
     }
 
@@ -751,16 +758,20 @@ void VcfWriter::print_indel_buffer(int32_t next_var_pos, const bed_coord_t &seg)
 
         ar_cov = 0;
         auto ivg_it = iv_it->second.begin();
-        IndelEvent &called_indel = ivg_it->second;
+        IndelEvent *called_indel_ptr = &ivg_it->second;
+
+        auto called_indel_read_count = (coverage_t)std::min(called_indel_ptr->_read_count, (uint32_t)_coverages->get_max_coverage());
 
         // find variant with maximum supporting reads
         while (ivg_it != iv_it->second.end()) {
             ar_cov += ivg_it->second._read_count;
-            if (ivg_it->second._read_count > called_indel._read_count) {
-                called_indel = ivg_it->second;
+            if (ivg_it->second._read_count > called_indel_read_count) {
+                called_indel_ptr = &ivg_it->second;
             }
             ++ivg_it;
         }
+
+        IndelEvent &called_indel = *called_indel_ptr;
 
         // if variant within a called region
         if (_opts->capturebed == nullptr ||
@@ -785,7 +796,7 @@ void VcfWriter::print_indel_buffer(int32_t next_var_pos, const bed_coord_t &seg)
 
             // record coverage for deletion span
             if (called_indel._isdel) {
-                _coverages->add_coverage_range(var_start, COVSIDX_INDEL_VR, called_indel._var_len, called_indel._read_count);
+                _coverages->add_coverage_range(var_start, COVSIDX_INDEL_VR, called_indel._var_len, called_indel_read_count);
             }
 
             if (_opts->dumpsnp || _opts->dumpindel || p_value < _opts->min_pr) {
@@ -796,9 +807,9 @@ void VcfWriter::print_indel_buffer(int32_t next_var_pos, const bed_coord_t &seg)
             bcf_update_filter(_indel_hdr, _indel_rec, &_indel_pass_int, 1);
 
             // set filter
-            var_ratio = (double)called_indel._read_count / total_coverage;
+            var_ratio = (double)called_indel_read_count / total_coverage;
 
-            if (called_indel._read_count < _opts->indel_min_var_reads) {
+            if (called_indel_read_count < _opts->indel_min_var_reads) {
                 bcf_add_filter(_indel_hdr, _indel_rec, _indel_filter_idx[INDEL_FILTER_LOW_VARIANTREADS]);
             }
 
@@ -825,7 +836,7 @@ void VcfWriter::print_indel_buffer(int32_t next_var_pos, const bed_coord_t &seg)
             if (!called_indel._isdel)
                 total_ref_cov -= _coverages->get_coverage(var_start, COVSIDX_INDEL_RR_INS);
 
-            this->set_pl(pl_arr, (double)total_ref_cov, (double)called_indel._read_count);
+            this->set_pl(pl_arr, (double)total_ref_cov, (double)called_indel_read_count);
 
             /* Use hard cutoffs for now until we get better priors for PL values
             if (pl_arr[2] < pl_arr[0]) {
@@ -856,6 +867,7 @@ void VcfWriter::print_indel_buffer(int32_t next_var_pos, const bed_coord_t &seg)
                 near_read_end_n[i] = 0;
             }
 
+            // near read end score
             // for each read
             for (auto &bc_it : *_cigar_list) {
                 if (bc_it.first.first > called_indel._var_start) {
@@ -868,7 +880,7 @@ void VcfWriter::print_indel_buffer(int32_t next_var_pos, const bed_coord_t &seg)
                 int32_t r_end = bc_it.first.first;
                 int32_t q_end = bc_it.first.first;
 
-                // for each read
+                // for each cigar
                 for (auto &cigar_it : bc_it.second) {
                     if (bam_cigar_type(cigar_it) & 0x01) {
                         q_end += bam_cigar_oplen(cigar_it);
@@ -913,8 +925,8 @@ void VcfWriter::print_indel_buffer(int32_t next_var_pos, const bed_coord_t &seg)
                     : 0.0;
             }
 
-            double n_tmp = (called_indel._read_count == 0) ? total_coverage : called_indel._read_count + total_ref_cov;
-            var_ratio = (double)called_indel._read_count / n_tmp;
+            double n_tmp = (called_indel_read_count == 0) ? total_coverage : called_indel_read_count + total_ref_cov;
+            var_ratio = (double)called_indel_read_count / n_tmp;
             ref_ratio = (double)total_ref_cov / n_tmp;
             if (var_ratio <= _opts->indel_het_min) {
                 gt_arr[0] = bcf_gt_unphased(0);
@@ -982,7 +994,7 @@ void VcfWriter::print_indel_buffer(int32_t next_var_pos, const bed_coord_t &seg)
             tmpf = (float)p_value;
             bcf_update_info_float(_indel_hdr, _indel_rec, "P", &tmpf, 1);
 
-            tmpi = (int32_t)called_indel._read_count;
+            tmpi = (int32_t)called_indel_read_count;
             bcf_update_format_int32(_indel_hdr, _indel_rec, "VR", &tmpi, 1);
             tmpi = (int32_t)total_ref_cov;
             bcf_update_format_int32(_indel_hdr, _indel_rec, "RR", &tmpi, 1);
@@ -1000,7 +1012,10 @@ void VcfWriter::print_indel_buffer(int32_t next_var_pos, const bed_coord_t &seg)
             }
             */
 
-            bcf_write1(_indel_fp, _indel_hdr, _indel_rec);
+            if (bcf_write1(_indel_fp, _indel_hdr, _indel_rec)) {
+                std::cerr << "Failed to write VCF record" << std::endl;
+                exit(EXIT_FAILURE);
+            }
         }
     }
 

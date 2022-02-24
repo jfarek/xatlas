@@ -38,9 +38,9 @@ Bam::Bam(const char *sf_fn, const char *ref_fn, uint8_t nthreads)
 
         // load reference index for reading cram
         char *fai_fn = new char[ref_fn_strlen + 5];
-        std::strncpy(fai_fn, ref_fn, ref_fn_strlen);
+        std::strncpy(fai_fn, ref_fn, ref_fn_strlen + 1);
         fai_fn[ref_fn_strlen] = '\0';
-        std::strncat(fai_fn, ".fai", 4);
+        std::strncat(fai_fn, ".fai", 5);
 
         set_fai_status = hts_set_fai_filename(_sf, fai_fn);
         delete[] fai_fn;

@@ -129,3 +129,8 @@ bool CoverageCounter::test_high_coverage(
 
     return rv;
 }
+
+coverage_t CoverageCounter::get_max_coverage()
+{
+    return _max_cov;
+}

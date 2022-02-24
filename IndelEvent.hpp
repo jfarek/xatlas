@@ -28,7 +28,7 @@ class IndelEvent
     int32_t _q_pos;
     std::string _seq;
     std::string _id;
-    uint16_t _read_count;
+    uint32_t _read_count;
     bool _isdel;
     uint16_t _near_read_end_count;
     qual_t _avg_nbq;

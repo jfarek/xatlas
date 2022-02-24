@@ -19,17 +19,6 @@
 
 /* ------===< xAtlas >===------ */
 
-/**
- * Yeah the code is a mess but you should see what I was given to start with ...
- *
- * TODO clean up the code
- * TODO fix cutoffs/thresholds/etc
- * TODO deduplicate the process_*() functions
- * TODO untangle snp and indel processing threads from read buffer thread so we can use semaphores instead of phtread barriers
- * TODO options for calling only snps/only indels
- * TODO more configuration options in general
- */
-
 static const char *help = "\
 Required arguments:\n\
     -r, --ref REF           Reference genome in FASTA format\n\
@@ -44,7 +33,7 @@ Options:\n\
     -v, --min-p-value               Minimum logit P-value to report variants\n\
     -m, --min-snp-mapq MAPQ         Minimum read mapping quality for calling SNPs\n\
     -n, --min-indel-mapq MAPQ       Minimum read mapping quality for calling indels\n\
-    -M, --max-coverage COV          Maximum coverage for calling variants normally\n\
+    -M, --max-coverage COV          High variant coverage cutoff for filtering variants\n\
     -A, --block-abs-lim LIM         gVCF non-variant block absolute range limit\n\
     -R, --block-rel-lim LIM         gVCF non-variant block relative range limit coefficient\n\
     -g, --gvcf                      Include non-variant gVCF blocks in output VCF file\n\
@@ -898,8 +887,14 @@ int main(int argc, char **argv)
     VcfWriter writer(coverages, refseq, events, cigar_list_process, indel_hdr, snp_hdr, indel_fp, snp_fp, &opts, &logit_params);
 
     writer.setup_vcf(sample_name, argc, argv, XATLAS_VERSION, ref, regions);
-    bcf_hdr_write(indel_fp, indel_hdr);
-    bcf_hdr_write(snp_fp, snp_hdr);
+    if (bcf_hdr_write(indel_fp, indel_hdr)) {
+        std::cerr << "Error: Failed to write indel VCF header" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    if (bcf_hdr_write(snp_fp, snp_hdr)) {
+        std::cerr << "Error: Failed to write SNP VCF header" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
     args.bam = &bam;
     args.events = &events;
