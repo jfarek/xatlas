@@ -1,7 +1,7 @@
 #ifndef _XATLAS_SNPEVENT_H
 #define _XATLAS_SNPEVENT_H
 
-#include "Xatlas.hpp"
+#include "xatlas/Xatlas.h"
 
 class SnpEvent
 {

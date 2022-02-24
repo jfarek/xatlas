@@ -1,10 +1,10 @@
 #ifndef _XATLAS_VCFWRITER_H
 #define _XATLAS_VCFWRITER_H
 
-#include "CoverageCounter.hpp"
-#include "EventScanner.hpp"
-#include "Logit.hpp"
-#include "Xatlas.hpp"
+#include "xatlas/CoverageCounter.h"
+#include "xatlas/EventScanner.h"
+#include "xatlas/Logit.h"
+#include "xatlas/Xatlas.h"
 #include "htslib/vcf.h"
 #include <cstdint>
 #include <string>

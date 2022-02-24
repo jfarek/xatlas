@@ -1,4 +1,4 @@
-#include "IndelEvent.hpp"
+#include "xatlas/IndelEvent.h"
 #include <cmath>
 #include <cstring>
 

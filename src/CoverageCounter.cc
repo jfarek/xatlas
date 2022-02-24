@@ -1,4 +1,4 @@
-#include "CoverageCounter.hpp"
+#include "xatlas/CoverageCounter.h"
 #include <cstring>
 
 CoverageCounter::CoverageCounter()

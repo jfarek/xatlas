@@ -1,4 +1,4 @@
-#include "ReferenceSequence.hpp"
+#include "xatlas/ReferenceSequence.h"
 #include <cstring>
 
 /**

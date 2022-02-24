@@ -1,9 +1,9 @@
 #ifndef _XATLAS_EVENTHOLDER_H
 #define _XATLAS_EVENTHOLDER_H
 
-#include "IndelEvent.hpp"
-#include "SnpEvent.hpp"
-#include "Xatlas.hpp"
+#include "xatlas/IndelEvent.h"
+#include "xatlas/SnpEvent.h"
+#include "xatlas/Xatlas.h"
 #include "htslib/sam.h"
 
 /* position -> allele/variant id -> variant set */

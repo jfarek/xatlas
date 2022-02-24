@@ -1,4 +1,4 @@
-#include "Bam.hpp"
+#include "xatlas/Bam.h"
 #include <cstring>
 #include <cstdlib>
 

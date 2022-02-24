@@ -1,4 +1,4 @@
-#include "GvcfBlock.hpp"
+#include "xatlas/GvcfBlock.h"
 #include <algorithm>
 #include <cmath>
 

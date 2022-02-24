@@ -1,7 +1,7 @@
 #ifndef _XATLAS_COVERAGECOUNTER_H
 #define _XATLAS_COVERAGECOUNTER_H
 
-#include "Xatlas.hpp"
+#include "xatlas/Xatlas.h"
 
 #define COVS_ALIGN 7
 

@@ -1,9 +1,9 @@
 #ifndef _XATLAS_INDELEVENT_H
 #define _XATLAS_INDELEVENT_H
 
-#include "CoverageCounter.hpp"
-#include "ReferenceSequence.hpp"
-#include "Xatlas.hpp"
+#include "xatlas/CoverageCounter.h"
+#include "xatlas/ReferenceSequence.h"
+#include "xatlas/Xatlas.h"
 #include <cstdint>
 
 enum strand_mask {

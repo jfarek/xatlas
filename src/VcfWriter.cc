@@ -1,5 +1,5 @@
-#include "VcfWriter.hpp"
-#include "GvcfBlock.hpp"
+#include "xatlas/VcfWriter.h"
+#include "xatlas/GvcfBlock.h"
 #include <algorithm>
 #include <cmath>
 #include <ctime>

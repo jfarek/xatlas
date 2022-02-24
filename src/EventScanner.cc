@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <deque>
-#include "EventScanner.hpp"
+#include "xatlas/EventScanner.h"
 
 EventScanner::EventScanner()
 {

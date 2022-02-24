@@ -1,4 +1,4 @@
-#include "Logit.hpp"
+#include "xatlas/Logit.h"
 #include <cmath>
 
 // \frac{1}{1/e^{-x}}

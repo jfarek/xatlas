@@ -12,17 +12,19 @@ add_compile_options(-Wall -Wextra -pedantic -O2)
 
 # xatlas: sources and executable
 
+include_directories(include)
+
 set(XATLAS_SOURCES
-    Bam.cpp
-    CoverageCounter.cpp
-    EventScanner.cpp
-    GvcfBlock.cpp
-    IndelEvent.cpp
-    Logit.cpp
-    ReferenceSequence.cpp
-    SnpEvent.cpp
-    VcfWriter.cpp
-    Xatlas.cpp
+    src/Bam.cc
+    src/CoverageCounter.cc
+    src/EventScanner.cc
+    src/GvcfBlock.cc
+    src/IndelEvent.cc
+    src/Logit.cc
+    src/ReferenceSequence.cc
+    src/SnpEvent.cc
+    src/VcfWriter.cc
+    src/Xatlas.cc
 )
 add_executable(xatlas ${XATLAS_SOURCES})
 

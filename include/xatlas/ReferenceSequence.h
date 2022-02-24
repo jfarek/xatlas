@@ -1,7 +1,7 @@
 #ifndef _XATLAS_SEQUENCE_H
 #define _XATLAS_SEQUENCE_H
 
-#include "Xatlas.hpp"
+#include "xatlas/Xatlas.h"
 #include "htslib/faidx.h"
 
 enum fai_status {

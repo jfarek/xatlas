@@ -1,4 +1,4 @@
-#include "SnpEvent.hpp"
+#include "xatlas/SnpEvent.h"
 #include <cmath>
 
 SnpEvent::SnpEvent()
