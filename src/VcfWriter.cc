@@ -770,6 +770,7 @@ void VcfWriter::print_indel_buffer(int32_t next_var_pos, const bed_coord_t &seg)
             ar_cov += ivg_it->second._read_count;
             if (ivg_it->second._read_count > called_indel_read_count) {
                 called_indel_ptr = &ivg_it->second;
+                called_indel_read_count = (coverage_t)std::min(called_indel_ptr->_read_count, (uint32_t)_coverages->get_max_coverage());
             }
             ++ivg_it;
         }

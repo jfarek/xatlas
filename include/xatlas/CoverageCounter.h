@@ -7,7 +7,7 @@
 
 namespace xatlas {
 
-const size_t COVS_ALIGN = 7;
+static const size_t COVS_ALIGN = 7;
 
 enum covs_idx {
     COVSIDX_INDEL_VR = 0,

@@ -2,35 +2,32 @@
 
 ## Overview
 
-xAtlas is a fast and retrainable small variant caller that has been developed
+xAtlas is a fast and scalable small variant caller that has been developed
 at the Baylor College of Medicine Human Genome Sequencing Center.
 
 ## Building
 
-xAtlas requires a recent version of HTSlib (versions 1.3 and higher are known
-to work, version 1.4 or higher is suggested).
+xAtlas requires the following software components to build:
 
-To build xAtlas, run:
+- [CMake](https://cmake.org/) (version 3.0 or higher required)
+- [HTSlib](https://github.com/samtools/htslib) (version 1.6 or higher
+recommended)
+- libpthread (included with most Unix-like systems)
 
-    autoconf
-    ./configure
-    make
+xAtlas can be built using CMake by running the following commands from the base
+directory:
 
-xAtlas multithreading support is enabled by running ``configure`` as:
+    $ mkdir build
+    $ cd build
+    $ cmake ..
+    $ make
 
-    ./configure --enable-multithreading
+If HTSlib is installed in a location outside of CMake's library search path,
+the HTSlib install prefix can be set for the CMake command by defining the
+CMake variable `HTSLIB_PREFIX`:
+
+    $ cmake -DHTSLIB_PREFIX=/path/to/htslib-1.x ..
 
 ## Usage
 
-xAtlas supports two types of multithreading:
-
-The ``-P`` option splits the processes for reading the input alignment,
-processing SNPs, and processing indels into three separate threads.
-
-The ``-t`` option allows a variable number of BAM decompression threads to be
-spawned by activating the HTSlib BAM decompression thread pool. We have found
-that running xAtlas on certain samples with the HTSlib thread pool active may
-expose apparent memory leaks in the HTSlib thread pool code, which do not
-present in xAtlas when running without the HTSlib thread pool activated. If you
-experience excessive memory usage when using the ``-t`` option, first try
-running xAtlas without this option.
+For example usage, see [GettingStarted](doc/GettingStarted.md).
