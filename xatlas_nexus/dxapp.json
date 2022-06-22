@@ -1,0 +1,192 @@
+{
+  "name": "xatlas",
+  "title": "xAtlas",
+  "summary": "Fast small variant caller",
+  "dxapi": "1.0.0",
+  "version": "0.3",
+  "inputSpec": [
+    {
+      "name": "in",
+      "label": "Input Bam/Cram",
+      "class": "file",
+      "optional": false,
+      "patterns": [
+        "*"
+      ],
+      "help": "Sorted and indexed input BAM or CRAM file"
+    },
+    {
+      "name": "in_index",
+      "label": "Input Bam/Cram index",
+      "class": "file",
+      "optional": false,
+      "patterns": [
+        "*"
+      ],
+      "help": "Index for input BAM or CRAM file"
+    },
+    {
+      "name": "ref",
+      "label": "Reference",
+      "class": "file",
+      "optional": false,
+      "patterns": [
+        "*"
+      ],
+      "help": "Reference genome in FASTA format"
+    },
+    {
+      "name": "sample_name",
+      "label": "Sample name",
+      "class": "string",
+      "optional": false,
+      "help": "Sample name to use in the output VCF file"
+    },
+    {
+      "name": "prefix",
+      "label": "Prefix",
+      "class": "string",
+      "optional": false,
+      "help": "Output VCF file prefix"
+    },
+    {
+      "name": "capture_bed",
+      "label": "Capture bed",
+      "class": "file",
+      "optional": true,
+      "patterns": [
+        "*"
+      ],
+      "help": "BED file of regions to process"
+    },
+    {
+      "name": "min_p_value",
+      "label": "Minimum p-value",
+      "class": "float",
+      "optional": true,
+      "default": 0.25,
+      "help": "Minimum logit P-value to report variants"
+    },
+    {
+      "name": "min_snp_mapq",
+      "label": "Minimum snp mapq",
+      "class": "int",
+      "optional": true,
+      "default": 1,
+      "help": "Minimum read mapping quality for calling SNPs"
+    },
+    {
+      "name": "min_indel_mapq",
+      "label": "Minimum indel mapq",
+      "class": "float",
+      "optional": true,
+      "default": 1,
+      "help": "Minimum read mapping quality for calling indels"
+    },
+    {
+      "name": "max_coverage",
+      "label": "Max coverage",
+      "class": "int",
+      "optional": true,
+      "default": 500,
+      "help": "High variant coverage cutoff for filtering variants"
+    },
+    {
+      "name": "block_abs_limit",
+      "label": "block absolute limit",
+      "class": "int",
+      "optional": true,
+      "default": 3,
+      "help": "gVCF non-variant block absolute range limit"
+    },
+    {
+      "name": "block_rel_limit",
+      "label": "block relative limit",
+      "class": "float",
+      "optional": true,
+      "default": 0.3,
+      "help": "gVCF non-variant block relative range limit coefficient"
+    },
+    {
+      "name": "gvcf",
+      "label": "gvcf",
+      "class": "boolean",
+      "optional": true,
+      "default": false,
+      "help": "Include non-variant gVCF blocks in output VCF file"
+    },
+    {
+      "name": "bgzf",
+      "label": "bgzf",
+      "class": "boolean",
+      "optional": true,
+      "default": true,
+      "help": "Write output in bgzip-compressed VCF format"
+    },
+    {
+      "name": "snp_logit_params",
+      "label": "snp-logit-params",
+      "class": "file",
+      "optional": true,
+      "patterns": [
+        "*"
+      ],
+      "help": "File with intercept and coefficients for SNP logit model"
+    },
+    {
+      "name": "indel_logit_params",
+      "label": "indel-logit-params",
+      "class": "file",
+      "optional": true,
+      "patterns": [
+        "*"
+      ],
+      "help": "File with intercept and coefficients for indel logit model"
+    },
+    {
+      "name": "enable_strand_filter",
+      "label": "enable-strand-filter",
+      "class": "boolean",
+      "optional": true,
+      "default": false,
+      "help": "Enable SNP filter for single-strandedness"
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "output_vcf",
+      "label": "Output VCF file",
+      "class": "file",
+      "patterns": [
+        "*"
+      ],
+      "help": ""
+    }
+  ],
+  "runSpec": {
+    "timeoutPolicy": {
+      "*": {
+        "hours": 12
+      }
+    },
+    "interpreter": "bash",
+    "release": "20.04",
+    "version": "0",
+    "distribution": "Ubuntu",
+    "file": "src/xatlas.sh"
+  },
+  "access": {
+    "network": [
+      "*"
+    ]
+  },
+  "regionalOptions": {
+    "aws:us-east-1": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "mem1_ssd1_v2_x8"
+        }
+      }
+    }
+  }
+}
