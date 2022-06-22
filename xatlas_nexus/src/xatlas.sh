@@ -34,6 +34,7 @@ main() {
     echo "Value of snp_logit_params: '$snp_logit_params'"
     echo "Value of indel_logit_params: '$indel_logit_params'"
     echo "Value of enable_strand_filter: '$enable_strand_filter'"
+    echo "Value of catch_fail: '${catch_fail}'"
 
     # The following line(s) use the dx command-line tool to download your file
     # inputs to the local file system using variable names for the filenames. To
@@ -87,10 +88,10 @@ main() {
     docker pull acenglish/xatlas
     docker run --cpus=$(nproc) -v `pwd`:/data acenglish/xatlas \
             -r reference.fa -P -t $(nproc) -i ${in_name} -s ${sample_name} -p ${prefix} \
-            ${params}
+            ${params} || if [ "$catch_fail" = true ]; then echo "xAtlas failed to finish. See logs."; exit 1; fi
 
     output_vcf_snp=$(dx upload ${prefix}_snp.vcf* --brief)
-    output_vcf_indel=$(dx upload ${prefix}_index.vcf* --brief)
+    output_vcf_indel=$(dx upload ${prefix}_indel.vcf* --brief)
 
     # The following line(s) use the utility dx-jobutil-add-output to format and
     # add output variables to your job's output as appropriate for the output

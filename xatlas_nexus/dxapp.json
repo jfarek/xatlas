@@ -150,12 +150,29 @@
       "optional": true,
       "default": false,
       "help": "Enable SNP filter for single-strandedness"
+    },
+    {
+      "name": "catch_fail",
+      "label": "catch_fail",
+      "class": "boolean",
+      "optional": true,
+      "default": true,
+      "help": "(UNSAFE!!) Catch non-zero exit status raised by xatlas and attempt to upload VCFs anyway"
     }
   ],
   "outputSpec": [
     {
-      "name": "output_vcf",
-      "label": "Output VCF file",
+      "name": "output_vcf_snp",
+      "label": "Output snp VCF file",
+      "class": "file",
+      "patterns": [
+        "*"
+      ],
+      "help": ""
+    },
+    {
+      "name": "output_vcf_indel",
+      "label": "Output indel VCF file",
       "class": "file",
       "patterns": [
         "*"
